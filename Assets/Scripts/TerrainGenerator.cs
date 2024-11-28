@@ -20,6 +20,8 @@ public class TerrainGenerator : MonoBehaviour
         {
             GenerateTerrain();
         }
+    
+        SimulateWeather();
     }
 
     void ConfigureFog()
@@ -205,6 +207,90 @@ public class TerrainGenerator : MonoBehaviour
 
         return mesh;
     }
+    
+    
+    void SimulateWeather()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(RainEffect());
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            StartCoroutine(SnowEffect());
+        }
+        else if (Input.GetKeyDown(KeyCode.W))
+        {
+            ApplyWindEffect();
+        }
+    }
+    
+    IEnumerator RainEffect()
+    {
+        ParticleSystem rain = Resources.Load<ParticleSystem>("Effects/Rain");
+    
+        if (rain == null)
+        {
+            Debug.LogError("Rain particle system not found in Resources/Effects");
+            yield break;
+        }
+    
+        float terrainHeight = GetTerrainHeight(width / 2, height / 2);
+        Vector3 centerPosition = new Vector3(width / 2, terrainHeight + 50, -20);
+        ParticleSystem rainInstance = Instantiate(rain, centerPosition, Quaternion.identity);
+    
+        
+        var renderer = rainInstance.GetComponent<ParticleSystemRenderer>();
+        Material rainMaterial = Resources.Load<Material>("Materials/RainMaterial");
+        if (rainMaterial != null)
+        {
+            renderer.material = rainMaterial;
+        }
+        else
+        {
+            Debug.LogError("Rain material not found!");
+        }
+    
+        
+        var main = rainInstance.main;
+        main.startColor = new Color(0.5f, 0.5f, 1f, 0.5f); 
+    
+        rainInstance.Play();
+        yield return new WaitForSeconds(10);
+        rainInstance.Stop();
+        Destroy(rainInstance.gameObject);
+    }
+    
+    IEnumerator SnowEffect()
+    {
+        ParticleSystem snow = Resources.Load<ParticleSystem>("Effects/Snow");
+    
+        if (snow == null)
+        {
+            Debug.LogError("Snow particle system not found in Resources/Effects");
+            yield break;
+        }
+    
+        float terrainHeight = GetTerrainHeight(width / 2, height / 2);
+        Vector3 centerPosition = new Vector3(width / 2, terrainHeight + 50, -20);
+        ParticleSystem snowInstance = Instantiate(snow, centerPosition, Quaternion.identity);
+        snowInstance.Play();
+        yield return new WaitForSeconds(10);
+        snowInstance.Stop();
+        Destroy(snowInstance.gameObject);
+    }
+    
+    float GetTerrainHeight(int x, int z)
+    {
+        float[,] heightMap = GenerateHeightMap();
+        return heightMap[x, z] * 50; 
+    }
+    
+    void ApplyWindEffect()
+    {
+        Debug.Log("Wind effect applied");
+    }
+    
     
     void ApplyErosion(float[,] heightMap)
     {

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour
@@ -24,6 +23,8 @@ public class TerrainGenerator : MonoBehaviour
         SimulateWeather();
     }
 
+    // ---- Tried to experiment with fog, but it didn't look as good as I thought it would ----
+    
     void ConfigureFog()
     {
         RenderSettings.fog = true;
@@ -33,6 +34,8 @@ public class TerrainGenerator : MonoBehaviour
     }
     
     
+    
+    // ---- Generates the terrain ----
     void GenerateTerrain()
     {
         float[,] heightMap = GenerateHeightMap();
@@ -54,6 +57,8 @@ public class TerrainGenerator : MonoBehaviour
         
     }
 
+    // ---- Generates the height map using Perlin noise ----
+    
     float[,] GenerateHeightMap()
     {
         float[,] heightMap = new float[width, height];
@@ -75,7 +80,7 @@ public class TerrainGenerator : MonoBehaviour
                 float amplitude = 1;
                 float frequency = 1;
                 float noiseHeight = 0;
-
+                
                 for (int i = 0; i < octaves; i++)
                 {
                     float xCoord = (float)x / width * scale * frequency + offsetX;
@@ -87,6 +92,8 @@ public class TerrainGenerator : MonoBehaviour
                     frequency *= lacunarity;
                 }
 
+                // ---- Finding the min and max noise height to normalize the values ----
+                
                 if (noiseHeight > maxNoiseHeight)
                 {
                     maxNoiseHeight = noiseHeight;
@@ -99,7 +106,8 @@ public class TerrainGenerator : MonoBehaviour
                 heightMap[x, y] = noiseHeight;
             }
         }
-
+        
+        // ---- Normalizing the values ----
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -111,6 +119,8 @@ public class TerrainGenerator : MonoBehaviour
         return SmoothHeightMap(heightMap);
     }
 
+    // ---- Smoothing the height map to make the terrain look more natural ----
+    
     float[,] SmoothHeightMap(float[,] heightMap)
     {
         float[,] smoothedHeightMap = new float[width, height];
@@ -139,6 +149,8 @@ public class TerrainGenerator : MonoBehaviour
     }
 
 
+    // ---- Assigning colors to the terrain based on height values ----
+    
     Color GetColorForHeight(float heightValue)
     {
         if (heightValue > 0.8f)
@@ -163,6 +175,8 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 
+    // ---- Generates the mesh using the height map ----
+    
     Mesh GenerateMesh(float[,] heightMap)
     {
         Mesh mesh = new Mesh();
@@ -209,6 +223,8 @@ public class TerrainGenerator : MonoBehaviour
     }
     
     
+    // ---- Simulating weather effects ----
+    
     void SimulateWeather()
     {
         if (Input.GetKeyDown(KeyCode.R))
@@ -224,6 +240,8 @@ public class TerrainGenerator : MonoBehaviour
             ApplyWindEffect();
         }
     }
+    
+    // ---- Weather effects ----
     
     IEnumerator RainEffect()
     {
@@ -291,6 +309,7 @@ public class TerrainGenerator : MonoBehaviour
         Debug.Log("Wind effect applied");
     }
     
+    // ---- Erosion effect ----
     
     void ApplyErosion(float[,] heightMap)
     {
